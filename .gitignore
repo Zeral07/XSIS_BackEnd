@@ -1,0 +1,13 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/XSISBackEnd/.vs
+/XSISBackEnd/bin/Debug/net8.0
+/XSISBackEnd/obj
+/XSISDataAccess/bin/Debug/net8.0
+/XSISDataAccess/obj
+/XSISFacade/bin/Debug/net8.0
+/XSISFacade/obj
+/XSISBackEnd/Error2024-04-29.log

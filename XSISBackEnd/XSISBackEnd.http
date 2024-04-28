@@ -1,0 +1,6 @@
+@XSISBackEnd_HostAddress = http://localhost:5269
+
+GET {{XSISBackEnd_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
