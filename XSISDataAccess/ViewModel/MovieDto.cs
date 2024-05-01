@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace XSISDataAccess.ViewModel
 {
@@ -11,12 +12,10 @@ namespace XSISDataAccess.ViewModel
 
         public string? Description { get; set; }
 
-        public int? Rating { get; set; }
+        public double? Rating { get; set; }
 
         public string? Images { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime Created_At { get; set; }
+        public DateTime? Updated_At { get; set; }
     }
 }

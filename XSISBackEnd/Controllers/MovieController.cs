@@ -12,11 +12,10 @@ namespace XSISBackEnd.Controllers
         private readonly IMovieFacade _movieFacade = movieFacade;
         private readonly ILogger<MovieController> _logger = logger;
 
-        [HttpPost]
-        [Route("Create")]
+        [HttpPost("")]
         public async Task<ActionResult<ResultResponse<MovieDto>>> Create([FromBody] MovieDto parameter)
         {
-            _logger.LogInformation("Hit API api/movie/create");
+            _logger.LogInformation("HttpPost API api/movie/create");
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -32,11 +31,10 @@ namespace XSISBackEnd.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("Delete")]
-        public async Task<ActionResult<ResultResponse<MovieDto>>> Delete([FromBody] int id)
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ResultResponse<MovieDto>>> Delete(int id)
         {
-            _logger.LogInformation("Hit API api/movie/delete/{id}", id);
+            _logger.LogInformation("HttpDelete API api/movie/{id}", id);
 
             var result = await _movieFacade.Delete(id);
             if (result.IsSuccess)
@@ -50,10 +48,9 @@ namespace XSISBackEnd.Controllers
         }
 
         [HttpGet("{id}")]
-        [Route("Retrieve")]
-        public async Task<ActionResult<ResultResponse<MovieDto>>> Retrieve([FromBody] int id)
+        public async Task<ActionResult<ResultResponse<MovieDto>>> Retrieve(int id)
         {
-            _logger.LogInformation("Hit API api/movie/retrieve/{id}", id);
+            _logger.LogInformation("HttpGet API api/movie/{id}", id);
 
             var result = await _movieFacade.Retrieve(id);
             if (result.IsSuccess)
@@ -66,11 +63,10 @@ namespace XSISBackEnd.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("RetrieveList")]
+        [HttpGet("")]
         public async Task<ActionResult<ResultResponse<List<MovieDto>>>> RetrieveList()
         {
-            _logger.LogInformation("Hit API api/movie/retrievelist");
+            _logger.LogInformation("HttpGet API api/movie");
 
             var result = await _movieFacade.RetrieveList();
             if (result.IsSuccess)
@@ -84,10 +80,9 @@ namespace XSISBackEnd.Controllers
         }
 
         [HttpPatch("{id}")]
-        [Route("Update")]
         public async Task<ActionResult<ResultResponse<MovieDto>>> Update([FromBody] MovieDto parameter)
         {
-            _logger.LogInformation("Hit API api/movie/update");
+            _logger.LogInformation("HttpPatch API api/movie/{id}", parameter.Id);
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

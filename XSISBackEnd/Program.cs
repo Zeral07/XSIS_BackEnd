@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using XSISBackEnd.Extension;
 using XSISDataAccess.Models;
@@ -13,11 +12,18 @@ builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.Re
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-builder.Services.AddDbContext<XsisbackEndContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("XSISBackEndDatabase")));
+builder.Services.Configure<DbSettings>(builder.Configuration.GetSection("DbSettings"));
 builder.Services.AddProblemDetails();
 builder.Services.AddDIGroup();
 
 var app = builder.Build();
+
+// ensure database and tables exist
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    await context.Init();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -29,6 +35,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+// global error handler
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.MapControllers();
 

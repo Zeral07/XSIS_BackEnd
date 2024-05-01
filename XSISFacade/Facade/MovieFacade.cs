@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+using XSISDataAccess.Interface;
 using XSISDataAccess.Models;
 using XSISDataAccess.ViewModel;
 using XSISFacade.Interface;
 
 namespace XSISFacade.Facade
 {
-    public class MovieFacade(XsisbackEndContext context, IMapper mapper) : IMovieFacade
+    public class MovieFacade(IMovieRepository repo, IMapper mapper) : IMovieFacade
     {
-        private readonly XsisbackEndContext _context = context;
+        private readonly IMovieRepository _repo = repo;
         private readonly IMapper _mapper = mapper;
 
         public async Task<ResultResponse<MovieDto>> Create(MovieDto modelDto)
@@ -16,12 +16,11 @@ namespace XSISFacade.Facade
             var resultResponse = new ResultResponse<MovieDto>();
             try
             {
-                Movie obj = _mapper.Map<Movie>(modelDto);
-                await _context.Movies.AddAsync(obj);
-                await _context.SaveChangesAsync();
+                Movie entity = _mapper.Map<Movie>(modelDto);
+                entity = await _repo.Create(entity);
                 resultResponse.Total = 1;
-                resultResponse.Result = _mapper.Map<MovieDto>(obj);
-                resultResponse.IsSuccess = false;
+                resultResponse.Result = _mapper.Map<MovieDto>(entity);
+                resultResponse.IsSuccess = true;
             }
             catch (Exception ex)
             {
@@ -36,19 +35,19 @@ namespace XSISFacade.Facade
             var resultResponse = new ResultResponse<MovieDto>();
             try
             {
-                Movie? obj = await _context.Movies.SingleOrDefaultAsync(x => x.Id == id);
-                if (obj is null) {
+                Movie? obj = await _repo.GetByID(id);
+                if (obj is null)
+                {
                     resultResponse.Errors.Add(new ErrorMessage { ErrorCode = "2", Message = "Data tidak ditemukan.", TechnicalMessage = "" });
                     resultResponse.IsSuccess = false;
                 }
-                else 
+                else
                 {
-                    _context.Movies.Remove(obj);
-                    await _context.SaveChangesAsync();
+                    await _repo.Delete(id);
                     resultResponse.IsSuccess = true;
                 }
                 resultResponse.Total = obj is null ? 0 : 1;
-                resultResponse.Result = obj is null ? _mapper.Map<MovieDto>(obj) : new();
+                resultResponse.Result = null;
             }
             catch (Exception ex)
             {
@@ -63,10 +62,19 @@ namespace XSISFacade.Facade
             var resultResponse = new ResultResponse<MovieDto>();
             try
             {
-                MovieDto result = _mapper.Map<MovieDto>(await _context.Movies.SingleOrDefaultAsync(x => x.Id == id));
-                resultResponse.Total = result is null ? 0 : 1;
-                resultResponse.Result = result;
-                resultResponse.IsSuccess = true;
+                Movie? obj = await _repo.GetByID(id);
+                if (obj is null)
+                {
+                    resultResponse.Errors.Add(new ErrorMessage { ErrorCode = "2", Message = "Data tidak ditemukan.", TechnicalMessage = "" });
+                    resultResponse.IsSuccess = false;
+                }
+                else
+                {
+                    resultResponse.Result = _mapper.Map<MovieDto>(obj);
+                    resultResponse.IsSuccess = true;
+                }
+
+                resultResponse.Total = obj is null ? 0 : 1;
             }
             catch (Exception ex)
             {
@@ -81,10 +89,18 @@ namespace XSISFacade.Facade
             var resultResponse = new ResultResponse<List<MovieDto>>();
             try
             {
-                List<MovieDto> result = _mapper.Map<List<MovieDto>>(await _context.Movies.ToListAsync());
-                resultResponse.Total = result.Count;
-                resultResponse.Result = result;
-                resultResponse.IsSuccess = true;
+                List<MovieDto> result = _mapper.Map<List<MovieDto>>(await _repo.GetAll());
+                if (!result.Any())
+                {
+                    resultResponse.Errors.Add(new ErrorMessage { ErrorCode = "2", Message = "Data tidak ditemukan.", TechnicalMessage = "" });
+                    resultResponse.IsSuccess = false;
+                }
+                else
+                {
+                    resultResponse.Total = result.Count;
+                    resultResponse.Result = result;
+                    resultResponse.IsSuccess = true;
+                }
             }
             catch (Exception ex)
             {
@@ -99,7 +115,7 @@ namespace XSISFacade.Facade
             var resultResponse = new ResultResponse<MovieDto>();
             try
             {
-                Movie? obj = await _context.Movies.SingleOrDefaultAsync(x => x.Id == modelDto.Id);
+                Movie? obj = await _repo.GetByID(modelDto.Id);
                 if (obj is null)
                 {
                     resultResponse.Errors.Add(new ErrorMessage { ErrorCode = "2", Message = "Data tidak ditemukan.", TechnicalMessage = "" });
@@ -107,8 +123,7 @@ namespace XSISFacade.Facade
                 }
                 else
                 {
-                    _context.Movies.Update(obj);
-                    await _context.SaveChangesAsync();
+                    await _repo.Update(obj);
                     resultResponse.IsSuccess = true;
                 }
                 resultResponse.Total = obj is null ? 0 : 1;
